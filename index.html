@@ -15,17 +15,38 @@
             font-size: 2.5em;
             color: #ff1493;
         }
+
+        /* Styles for the cake image container */
+        .cake-image {
+            position: relative; /* Essential for positioning the candle relative to this */
+            display: inline-block; /* Allows it to shrink-wrap content and center with margin: auto */
+            max-width: 500px; /* Control max size of the cake image */
+            width: 90%; /* Responsive width */
+            margin: 20px auto; /* Center the image container and add some space */
+            border: 5px solid #fff;
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            overflow: hidden; /* Ensures nothing spills out if positioning goes slightly off */
+        }
         
-        
+        .cake-image img {
+            display: block; /* Make the image a block element */
+            width: 100%; /* Make the image fill its container */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+        /* Candle styles - adjusted for placement on the image */
         .candle {
             width: 10px;
             height: 40px;
             background: #ff69b4;
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
+            position: absolute; /* Positioned relative to .cake-image */
+            top: 20%; /* Adjust this value to move the candle up/down on the cake */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Fine-tune horizontal centering */
             border-radius: 5px;
+            z-index: 10; /* Ensures the candle is on top of the image */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Optional: add a subtle shadow to the candle */
         }
         .flame {
             width: 15px;
@@ -37,6 +58,7 @@
             left: 50%;
             transform: translateX(-50%);
             animation: flicker 0.2s infinite;
+            filter: drop-shadow(0 0 5px orange); /* Add a glow effect */
         }
         @keyframes flicker {
             0% { transform: translateX(-50%) scale(1); opacity: 1; }
@@ -56,13 +78,16 @@
 <body>
     <h1>Happy 23rd Birthday Deva! 🎉</h1>
     <div class="message">Wishing you a fantastic day! 🎂</div>
-    <div class="cake-image" style="position: relative; display: inline-block;">
-        <img src="public/images/Gemini_Generated_Image_ach41each41each4.png" alt="Happy 23rd Birthday Cake for Deva" style="display: block;">
+
+    <div class="cake-image">
+        <img src="public/images/Gemini_Generated_Image_ach41each41each4.png" alt="Happy 23rd Birthday Cake for Deva">
         <div class="candle" id="candle">
             <div class="flame" id="flame"></div>
         </div>
     </div>
+    
     <div class="message">Blow near the mic to blow out the candle! 🎂</div>
+    
     <script>
         // Detect blowing sound to turn off the flame
         const flame = document.getElementById('flame');
@@ -80,17 +105,21 @@
                     for (let i = 0; i < data.length; i++) {
                         sum += Math.abs(data[i] - 128);
                     }
-                    if (sum > 2000) {
+                    // Adjust this threshold if it's too sensitive or not sensitive enough
+                    if (sum > 2000) { 
                         flame.classList.add('off');
                     }
                     requestAnimationFrame(detectBlow);
                 }
                 detectBlow();
             }).catch(() => {
-                alert("Microphone access denied.");
+                // Only alert if microphone access is actually needed for the feature
+                // alert("Microphone access denied. The candle blow-out feature will not work."); 
+                console.warn("Microphone access denied. Candle blow-out feature disabled.");
             });
         } else {
-            alert("Your browser doesn't support microphone access.");
+            // alert("Your browser doesn't support microphone access. The candle blow-out feature will not work.");
+            console.warn("Your browser doesn't support microphone access. Candle blow-out feature disabled.");
         }
     </script>
 </body>
