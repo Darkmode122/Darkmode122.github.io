@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Happy Birthday Deva!</title>
+    <title>Happy Birthday Deva Chellam!</title>
     <style>
         body {
             text-align: center;
@@ -10,10 +10,13 @@
             background: linear-gradient(to top, #fbc2eb, #a6c1ee);
             margin: 0;
             padding: 50px;
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
         h1 {
             font-size: 2.5em;
             color: #ff1493;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
         }
 
         /* Styles for the cake image container */
@@ -29,44 +32,90 @@
             overflow: hidden; /* Ensures nothing spills out if positioning goes slightly off */
         }
         
+        .cake-image img {
+            max-width: 100%; /* Ensures the image scales down within its container */
+            height: auto; /* Maintains aspect ratio */
+            display: block; /* Removes extra space below image */
+        }
 
         /* Candle styles - adjusted for placement on the image */
         .candle {
-            width: 10px;
-            height: 40px;
-            background: #ffda69;
+            /* Since your image has the candle, we'll make this div transparent
+               and use it primarily for positioning the flame accurately. */
+            width: 10px; /* Example width, adjust as needed */
+            height: 40px; /* Example height, adjust as needed */
+            background: transparent; /* Make the overlay candle stick invisible */
             position: absolute; /* Positioned relative to .cake-image */
-            top: 20%; /* Adjust this value to move the candle up/down on the cake */
+            
+            /* These values are estimates based on a typical cake image.
+               You will very likely need to fine-tune 'top' and possibly 'left'
+               after testing in your browser to perfectly match your 'unnamed.png'. */
+            top: 20%; /* Adjust this percentage to move the flame up/down on the cake */
             left: 50%; /* Center horizontally */
             transform: translateX(-50%); /* Fine-tune horizontal centering */
+            
             border-radius: 5px;
-            z-index: 10; /* Ensures the candle is on top of the image */
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Optional: add a subtle shadow to the candle */
+            z-index: 10; /* Ensures the candle (and flame) is on top of the image */
+            box-shadow: none; /* Remove shadow since it's transparent */
         }
+
         .flame {
-            width: 15px;
-            height: 15px;
+            width: 15px; /* Adjust to control flame width */
+            height: 15px; /* Adjust to control flame height */
             background: orange;
             border-radius: 50%;
             position: absolute;
-            top: -15px;
+            /* Adjust this to position the flame precisely above the candle wick.
+               A negative 'top' moves it upwards from the top of the .candle div. */
+            top: -15px; 
             left: 50%;
             transform: translateX(-50%);
-            animation: flicker 0.2s infinite;
+            animation: flicker 0.2s infinite alternate; /* 'alternate' makes it smoother */
             filter: drop-shadow(0 0 5px orange); /* Add a glow effect */
+            transform-origin: bottom center; /* For better scaling effect */
         }
+
         @keyframes flicker {
-            0% { transform: translateX(-50%) scale(1); opacity: 1; }
-            50% { transform: translateX(-50%) scale(1.2); opacity: 0.8; }
-            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+            0% { transform: translateX(-50%) scale(1); opacity: 1; filter: drop-shadow(0 0 5px orange); }
+            50% { transform: translateX(-50%) scale(1.1); opacity: 0.9; filter: drop-shadow(0 0 8px orange); }
+            100% { transform: translateX(-50%) scale(0.9); opacity: 1; filter: drop-shadow(0 0 6px orange); }
         }
+
         .message {
             font-size: 1.5em;
             margin-top: 20px;
             color: #6a0572;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
         }
+
         .off {
-            display: none;
+            display: none; /* Hides the flame when blown out */
+        }
+
+        /* Optional: Add some confetti or particle effects for visual flair */
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: fall var(--duration) linear forwards;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotateZ(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
         }
     </style>
 </head>
@@ -75,7 +124,7 @@
     <div class="message">Wishing you a fantastic day! 🎂</div>
 
     <div class="cake-image">
-        <img src="public/images/unnamed.png" alt="Birthday cake with colorful decorations and a single lit candle on top">
+        <img src="public/images/unnamed.png" alt="Birthday cake with 'Happy 23rd Birthday Deva Chellam' and an unlit candle">
         <div class="candle" id="candle">
             <div class="flame" id="flame"></div>
         </div>
@@ -83,38 +132,88 @@
     
     <div class="message">Blow near the mic to blow out the candle! 🎂</div>
     
+    <div class="confetti" id="confetti-container"></div>
+
     <script>
-        // Detect blowing sound to turn off the flame
         const flame = document.getElementById('flame');
+        const confettiContainer = document.getElementById('confetti-container');
+        let audioStream = null; // To store the audio stream
+
+        // Function to create and animate confetti pieces
+        function createConfetti() {
+            const colors = ['#fbc2eb', '#a6c1ee', '#ff1493', '#ffa500', '#90ee90', '#add8e6'];
+            for (let i = 0; i < 50; i++) { // Generate 50 pieces of confetti
+                const piece = document.createElement('div');
+                piece.classList.add('confetti-piece');
+                piece.style.setProperty('--color', colors[Math.floor(Math.random() * colors.length)]);
+                piece.style.left = Math.random() * 100 + 'vw';
+                piece.style.top = Math.random() * -20 + 'px'; // Start slightly above viewport
+                piece.style.setProperty('--duration', (Math.random() * 2 + 3) + 's'); // Duration between 3 and 5 seconds
+                piece.style.animationDelay = (Math.random() * 0.5) + 's'; // Stagger animation
+                piece.style.transform = `scale(${Math.random() * 0.8 + 0.2})`; // Random size
+                confettiContainer.appendChild(piece);
+
+                // Remove piece after animation to prevent DOM bloat
+                piece.addEventListener('animationend', () => {
+                    piece.remove();
+                });
+            }
+        }
+
+        // Detect blowing sound to turn off the flame
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                audioStream = stream; // Store stream to stop it later
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const mic = audioContext.createMediaStreamSource(stream);
                 const analyser = audioContext.createAnalyser();
                 analyser.fftSize = 2048;
                 mic.connect(analyser);
                 const data = new Uint8Array(analyser.fftSize);
+
                 function detectBlow() {
+                    if (flame.classList.contains('off')) {
+                        // If flame is already off, stop detection and clean up audio
+                        if (audioStream) {
+                            audioStream.getTracks().forEach(track => track.stop());
+                            audioStream = null;
+                        }
+                        return; 
+                    }
+
                     analyser.getByteTimeDomainData(data);
                     let sum = 0;
                     for (let i = 0; i < data.length; i++) {
-                        sum += Math.abs(data[i] - 128);
+                        sum += Math.abs(data[i] - 128); // Calculate average amplitude
                     }
+                    
                     // Adjust this threshold if it's too sensitive or not sensitive enough
-                    if (sum > 2000) { 
+                    // A higher threshold requires a louder "blow"
+                    const blowThreshold = 2500; // Increased threshold for more distinct blow
+                    if (sum > blowThreshold) { 
                         flame.classList.add('off');
+                        createConfetti(); // Trigger confetti when flame goes out
+                        // Optionally, add a short delay before stopping audio to let confetti animation start
+                        setTimeout(() => {
+                            if (audioStream) {
+                                audioStream.getTracks().forEach(track => track.stop());
+                                audioStream = null;
+                            }
+                        }, 500); // Stop audio after 0.5 seconds
                     }
                     requestAnimationFrame(detectBlow);
                 }
                 detectBlow();
-            }).catch(() => {
-                // Only alert if microphone access is actually needed for the feature
-                // alert("Microphone access denied. The candle blow-out feature will not work."); 
-                console.warn("Microphone access denied. Candle blow-out feature disabled.");
+            }).catch(error => {
+                console.warn("Microphone access denied or error: ", error);
+                console.warn("Candle blow-out feature disabled. Please ensure microphone access is granted.");
+                // Optionally display a message to the user that mic access failed
+                // document.querySelector('.message').textContent = "Microphone access failed. Blow-out feature disabled.";
             });
         } else {
-            // alert("Your browser doesn't support microphone access. The candle blow-out feature will not work.");
             console.warn("Your browser doesn't support microphone access. Candle blow-out feature disabled.");
+            // Optionally display a message to the user that mic access is not supported
+            // document.querySelector('.message').textContent = "Your browser doesn't support microphone access. Blow-out feature disabled.";
         }
     </script>
 </body>
