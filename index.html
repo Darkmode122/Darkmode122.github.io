@@ -19,7 +19,7 @@
             margin-bottom: 10px;
         }
 
-        /* Styles for the cake image container */
+        /* Styles for the cake image container for the candle */
         .cake-image {
             position: relative; /* Essential for positioning the candle relative to this */
             display: inline-block; /* Allows it to shrink-wrap content and center with margin: auto */
@@ -58,16 +58,14 @@
             z-index: 10; /* Ensures the candle (and flame) is on top of the image */
             box-shadow: none; /* Remove shadow since it's transparent */
         }
-
         .flame {
             width: 15px; /* Adjust to control flame width */
             height: 15px; /* Adjust to control flame height */
             background: orange;
             border-radius: 50%;
             position: absolute;
-            /* Adjust this to position the flame precisely above the candle wick.
-               A negative 'top' moves it upwards from the top of the .candle div. */
-            top: -15px; 
+            /* Move the flame higher by decreasing the negative 'top' value */
+            top: -90px; /* Was -15px, now higher */
             left: 50%;
             transform: translateX(-50%);
             animation: flicker 0.2s infinite alternate; /* 'alternate' makes it smoother */
