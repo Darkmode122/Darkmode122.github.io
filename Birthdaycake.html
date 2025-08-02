@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Happy Birthday Deva!</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(to top, #fbc2eb, #a6c1ee);
+            margin: 0;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #ff1493;
+        }
+        .cake {
+            margin: 50px auto;
+            width: 300px;
+            height: 200px;
+            background: #f7b267;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 10px #c97b3f;
+        }
+        .candle {
+            width: 10px;
+            height: 40px;
+            background: #ff69b4;
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+        }
+        .flame {
+            width: 15px;
+            height: 15px;
+            background: orange;
+            border-radius: 50%;
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: flicker 0.2s infinite;
+        }
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1); opacity: 1; }
+            50% { transform: translateX(-50%) scale(1.2); opacity: 0.8; }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        .message {
+            font-size: 1.5em;
+            margin-top: 20px;
+            color: #6a0572;
+        }
+        .off {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Happy 23rd Birthday Deva! 🎉</h1>
+    <div class="cake">
+        <div class="candle" id="candle">
+            <div class="flame" id="flame"></div>
+        </div>
+    </div>
+    <div class="message">Blow near the mic to blow out the candle! 🎂</div>
+    <script>
+        // Detect blowing sound to turn off the flame
+        const flame = document.getElementById('flame');
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const mic = audioContext.createMediaStreamSource(stream);
+                const analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                mic.connect(analyser);
+                const data = new Uint8Array(analyser.fftSize);
+                function detectBlow() {
+                    analyser.getByteTimeDomainData(data);
+                    let sum = 0;
+                    for (let i = 0; i < data.length; i++) {
+                        sum += Math.abs(data[i] - 128);
+                    }
+                    if (sum > 2000) {
+                        flame.classList.add('off');
+                    }
+                    requestAnimationFrame(detectBlow);
+                }
+                detectBlow();
+            }).catch(() => {
+                alert("Microphone access denied.");
+            });
+        } else {
+            alert("Your browser doesn't support microphone access.");
+        }
+    </script>
+</body>
+</html>
